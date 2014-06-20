@@ -11,10 +11,11 @@ var express = require('express'); // Express web server framework
 var request = require('request'); // "Request" library
 var querystring = require('querystring');
 var port = 8888;
+var baseUrl = 'http://30secmoods.vince.cloud.spotify.net/';
 
 var client_id = '03ffe0cac0a0401aa6673c3cf6d02ced'; // Your client id
 var client_secret = 'a57c43efb9644574a96d6623fb8bfbc2'; // Your client secret
-var redirect_uri = 'http://localhost:' + port + '/callback'; // Your redirect uri
+var redirect_uri = baseUrl + ':' + port + '/callback'; // Your redirect uri
 
 var echojs = require('echojs');
 
