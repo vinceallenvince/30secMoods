@@ -1,0 +1,213 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Example of the Authorization Code flow with Spotify</title>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link href='css/main.css' rel='stylesheet' type='text/css'>
+    <script src="scripts/q.js"></script>
+    <script src="scripts/spotify-web-api.js"></script>
+    <script src="scripts/moods.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+  </head>
+
+  <body>
+
+    <div class="container">
+
+      <div class="container-left">
+
+        <div id="login">
+          <h1>This is an example of the Authorization Code flow</h1>
+          <a href="/login" class="btn btn-primary">Log in with Spotify</a>
+        </div>
+        <div id="loggedin">
+          <div id="moods">
+          </div>
+        </div>
+
+      </div>
+
+      <div class="container-right">
+        <div class="container-app-title">
+          <h2 class='app-title'>30s Blues Moods</h2>
+          <p class='app-subtitle'>powered by the <span class='app-subtitle-sp'>Spotify Web API</span></p>
+        </div>
+        <div id="tracks">
+        </div>
+      </div>
+    </div>
+
+    <script id="moods-template" type="text/x-handlebars-template">
+      <ul class="mood-list">
+        {{#each moods}}
+          {{mood_button}}
+        {{/each}}
+      </ul>
+    </script>
+
+    <script id="tracks-template" type="text/x-handlebars-template">
+      <ul class="track-list">
+        {{#each songs}}
+          {{track_button}}
+        {{/each}}
+      </ul>
+    </script>
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/2.0.0-alpha.1/handlebars.min.js"></script>
+    <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+    <script>
+      (function() {
+
+        Handlebars.registerHelper('mood_button', function(res) {
+          var h = getHue(res.data.index);
+          return new Handlebars.SafeString(
+            "<li class='mood' data-mood='" + this.name + "' data-index=" + res.data.index + " data-valence=" + this.valence + " style='background-color: hsl(" + h + ", 50%, 50%);'>" + this.name + "</li>"
+          );
+        });
+
+        Handlebars.registerHelper('track_button', function(res) {
+          return new Handlebars.SafeString(
+            "<li class='track'><div class='track-title' data-track_id='" + (this.tracks.length ? this.tracks[0].foreign_id.replace('spotify:track:', '') : '') + "' data-track_index=" + res.data.index + ">" + this.title + "</div><div class='track-artist-name'>" + this.artist_name + "</div></li>"
+          );
+        });
+
+        function getHue(index) {
+          return 217 - (index * 0.5);
+        }
+
+        function dampenMoodList(e) {
+          var moods = document.querySelectorAll('.mood'),
+              i, l = moods.length;
+          for (i = 0; i < l; i++) {
+            moods[i].style.backgroundColor = "hsl(" + getHue(i) + ", 40%, 40%)";
+          }
+        }
+
+        function setActiveMood(e, index) {
+          e.target.style.backgroundColor = "hsl(" + getHue(index) + ", 50%, 50%)";
+        }
+
+        function resetTrackList() {
+          var tracks = document.querySelectorAll('.track');
+              i, l = tracks.length;
+          for (var i = 0; i < l; i++) {
+            tracks[i].classList.remove('active-track');
+          }
+        }
+
+        /**
+         * Obtains parameters from the hash of the URL
+         * @return Object
+         */
+        function getHashParams() {
+          var hashParams = {};
+          var e, r = /([^&;=]+)=?([^&;]*)/g,
+              q = window.location.hash.substring(1);
+          while ( e = r.exec(q)) {
+             hashParams[e[1]] = decodeURIComponent(e[2]);
+          }
+          return hashParams;
+        }
+
+        var moodsSource = document.getElementById('moods-template').innerHTML,
+            moodsTemplate = Handlebars.compile(moodsSource),
+            moodsPlaceholder = document.getElementById('moods');
+
+        var tracksSource = document.getElementById('tracks-template').innerHTML,
+            tracksTemplate = Handlebars.compile(tracksSource),
+            tracksPlaceholder = document.getElementById('tracks');
+
+        var params = getHashParams();
+
+        var access_token = params.access_token
+            refresh_token = params.refresh_token;
+
+        if (access_token) {
+
+          var audioObjects = [], trackList = [];
+
+          var socket = io.connect('http://localhost:8888');
+
+          socket.on('gotTracks', function(res) {
+            tracksPlaceholder.innerHTML = tracksTemplate(res.data);
+            trackList = [];
+            for (var i = 0; i < res.data.songs.length; i++) {
+              trackList.push(res.data.songs[i].tracks.length ? res.data.songs[i].tracks[0].foreign_id.replace('spotify:track:', '') : '');
+            }
+            // autoplay the first track
+            var firstTrack = document.querySelector('.track-title[data-track_index="0"]');
+            playTrack(trackList[0], 0, firstTrack);
+          });
+
+          $('#login').hide();
+          $('#loggedin').show();
+
+          moodsPlaceholder.innerHTML = moodsTemplate(moods);
+
+          moodsPlaceholder.addEventListener('click', function(e) {
+            if (e.target.dataset.mood) {
+              currentMood = e.target.dataset.mood;
+              socket.emit('getArtistsByMood', {
+                mood: currentMood,
+                valence: e.target.dataset.valence
+              });
+              dampenMoodList(e);
+              setActiveMood(e, e.target.dataset.index);
+              var appTitle = document.querySelector('.container-app-title');
+              appTitle.style.display = 'none';
+            }
+          }, false);
+
+          tracksPlaceholder.addEventListener('click', function(e) {
+            if (e.target.dataset.track_id) {
+              playTrack(e.target.dataset.track_id, e.target.dataset.track_index, e.target);
+            }
+          });
+
+          var spotifyApi = new SpotifyWebApi();
+          spotifyApi.setAccessToken(access_token);
+          spotifyApi.setPromiseImplementation(Q);
+
+          function playTrack(track_id, track_index, target) {
+
+            spotifyApi.getTrack(track_id)
+              .then(function(data) {
+
+                if (audioObjects.length) {
+                  audioObjects[audioObjects.length - 1].pause();
+                }
+
+                var audioObject = new Audio(data.preview_url);
+                audioObject.dataset.track_index = track_index;
+                audioObject.play();
+                audioObject.onended = onEnded.bind(audioObject);
+                function onEnded(e) {
+                  var track_index = parseInt(audioObjects[audioObjects.length - 1].dataset.track_index, 10);
+                  if (trackList.length > track_index + 1) {
+                    var target = document.querySelector('.track-title[data-track_index="' + (track_index + 1) + '"]');
+                    playTrack(trackList[track_index + 1], track_index + 1, target);
+                  } else {
+                    socket.emit('getArtistsByMood', {
+                      mood: currentMood
+                    });
+                  }
+                }
+                audioObjects.push(audioObject);
+
+                resetTrackList();
+                target.parentNode.classList.add('active-track');
+
+              }, function(err) {
+                console.error('Received error code: %s', err.status, err.statusText);
+              });
+          }
+
+        } else {
+            $('#login').show();
+            $('#loggedin').hide();
+        }
+
+      })();
+    </script>
+</html>
+

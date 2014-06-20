@@ -1,0 +1,67 @@
+body {
+  font-family: 'Open Sans', Helvetica;
+  margin: 0;
+}
+#login, #loggedin {
+  display: none;
+}
+.text-overflow {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 500px;
+}
+.container {
+  width: 100%;
+  padding: 0;
+}
+.container-left, .container-right {
+  width: 49%;
+  display: inline-block;
+  vertical-align: top;
+}
+.container-right {
+  width: 40%;
+  margin-left: -4px;
+}
+.mood-list, .track-list {
+  list-style: none;
+  margin: 0; padding: 0;
+}
+.mood, .track {
+  padding: 0.5em 0.5em;
+  color: white;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+.track {
+  padding: 1em 0 1em 1em;
+  color: black;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+.track-title {
+  font-size: 1.2em;
+  line-height: 1.5em;
+  font-weight: 700;
+}
+.track-artist-name {
+  font-size: 0.8em;
+  color: rgb(150, 150, 150);
+}
+.active-track {
+  background-color: rgb(220, 220, 220);
+}
+.container-app-title {
+  padding: 0 0 0 1em;
+}
+.app-title, .app-subtitle {
+  padding: 0;
+  margin: 0.25em 0 0;
+  color: hsl(217, 50%, 50%);
+  font-weight: 400;
+  font-size: 3.5em;
+}
+.app-subtitle {
+  font-size: 1em;
+  color: rgb(200, 200, 200);
+}

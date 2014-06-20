@@ -1,0 +1,15 @@
+{
+  "author": "Vince Allen",
+  "name": "30secMood",
+  "description": "Generate 30 sec previews based on Echo Nest moods.",
+  "version": "0.0.1",
+  "main": "app.js",
+  "dependencies": {
+    "express": "~4.0.0",
+    "request": "~2.34.0",
+    "querystring": "~0.2.0",
+    "socket.io": "~1.0.5",
+    "q": "~1.0.1",
+    "echojs": "~0.1.4"
+  }
+}
