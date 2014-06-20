@@ -1,6 +1,6 @@
 {
   "author": "Vince Allen",
-  "name": "30secMood",
+  "name": "30secMoods",
   "description": "Generate 30 sec previews based on Echo Nest moods.",
   "version": "0.0.1",
   "main": "app.js",
