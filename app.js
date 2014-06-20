@@ -156,8 +156,8 @@ app.get('/refresh_token', function(req, res) {
   });
 });
 
-console.log('Listening on 80');
-server.listen(80);
+console.log('Listening on ' + port);
+server.listen(port);
 
 //
 
