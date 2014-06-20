@@ -5,6 +5,10 @@ body {
 #login, #loggedin {
   display: none;
 }
+.login {
+  padding: 2.2em 6em 1em 1em;
+  text-align: right;
+}
 .text-overflow {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -21,7 +25,7 @@ body {
   vertical-align: top;
 }
 .container-right {
-  width: 40%;
+  width: 49%;
   margin-left: -4px;
 }
 .mood-list, .track-list {
@@ -38,11 +42,19 @@ body {
   padding: 1em 0 1em 1em;
   color: black;
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  position: relative;
 }
-.track-title {
+.track-title, .track-unavailable {
   font-size: 1.2em;
   line-height: 1.5em;
   font-weight: 700;
+  width: 50%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.track-unavailable {
+  color: rgb(150, 150, 150);
 }
 .track-artist-name {
   font-size: 0.8em;
@@ -50,6 +62,15 @@ body {
 }
 .active-track {
   background-color: rgb(220, 220, 220);
+}
+.listen-button {
+  position: absolute;
+  top: 16px; right: 10px;
+  width: 159px; height: 44px;
+  display: none;
+}
+.active-track .listen-button {
+  display: block;
 }
 .container-app-title {
   padding: 0 0 0 1em;
@@ -59,7 +80,7 @@ body {
   margin: 0.25em 0 0;
   color: hsl(217, 50%, 50%);
   font-weight: 400;
-  font-size: 3.5em;
+  font-size: 3.35em;
 }
 .app-subtitle {
   font-size: 1em;

@@ -31,10 +31,12 @@ io.on('connection', function (socket) {
 
   socket.on('getArtistsByMood', function(data) {
 
+      var mood = data.mood;
+
       echo('artist/search').get({
         format: 'json',
         genre: 'blues',
-        mood: data.mood,
+        mood: mood,
         results: 5,
         callback: bustClientCache()
       }, function (err, json) {
@@ -55,15 +57,18 @@ io.on('connection', function (socket) {
           type: 'artist',
           artist: artist_seeds,
           results: 20,
-          song_selection: data.valence ? data.valence == 1 ? 'valence-top' : 'valence-bottom' : false,
-          bucket: ['id:spotifyv2-ZZ', 'tracks'],
+          //song_selection: data.valence ? data.valence == 1 ? 'valence-top' : 'valence-bottom' : false,
+          bucket: ['id:spotify', 'tracks'],
           callback: bustClientCache()
         }, function (err, json) {
           if (err) {
             console.error('Received error code: %s', err.status);
             return;
           }
-          socket.emit('gotTracks', {data: json.response});
+          socket.emit('gotTracks', {
+            data: json.response,
+            mood: mood
+          });
         });
       });
   });
